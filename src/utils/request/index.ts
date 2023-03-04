@@ -73,4 +73,4 @@ export function post<T = any>(
   })
 }
 
-export default post
+export default { get, post }

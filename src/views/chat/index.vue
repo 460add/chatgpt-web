@@ -69,6 +69,9 @@ async function onConversation() {
   if (lastContext)
     options = { ...lastContext }
 
+  // 如果会话ID不存在，就从route中获取
+  options.conversationId = options.conversationId ?? uuid
+
   addChat(
     +uuid,
     {
@@ -98,18 +101,28 @@ async function onConversation() {
           chunk = responseText.substring(lastIndex)
         try {
           const data = JSON.parse(chunk)
+          options.parentMessageId = data.parentMessageId
           updateChat(
             +uuid,
             dataSources.value.length - 1,
             {
+              id: data.id as string,
               dateTime: new Date().toLocaleString(),
               text: data.text ?? '',
               inversion: false,
               error: false,
               loading: false,
-              conversationOptions: { conversationId: data.conversationId, parentMessageId: data.id },
+              conversationOptions: { conversationId: data.conversationId, parentMessageId: data.parentMessageId },
               requestOptions: { prompt: message, options: { ...options } },
             },
+          )
+          const questionIndex = dataSources.value.length - 2
+          const question = dataSources.value[questionIndex]
+          question.id = data.parentMessageId as string
+          updateChat(
+            +uuid,
+            questionIndex,
+            question,
           )
           scrollToBottom()
         }
@@ -184,6 +197,10 @@ async function onRegenerate(index: number) {
   if (requestOptions.options)
     options = { ...requestOptions.options }
 
+  // 如果会话ID不存在，就从route中获取
+  options.conversationId = options.conversationId ?? uuid
+  options.regenerate = index
+
   loading.value = true
 
   updateChat(
@@ -219,12 +236,13 @@ async function onRegenerate(index: number) {
             +uuid,
             index,
             {
+              id: data.id as string,
               dateTime: new Date().toLocaleString(),
               text: data.text ?? '',
               inversion: false,
               error: false,
               loading: false,
-              conversationOptions: { conversationId: data.conversationId, parentMessageId: data.id },
+              conversationOptions: { conversationId: data.conversationId, parentMessageId: data.parentMessageId },
               requestOptions: { prompt: message, ...options },
             },
           )
@@ -277,8 +295,18 @@ function handleDelete(index: number) {
     content: t('chat.deleteMessageConfirm'),
     positiveText: t('common.yes'),
     negativeText: t('common.no'),
-    onPositiveClick: () => {
-      chatStore.deleteChatByUuid(+uuid, index)
+    onPositiveClick: async () => {
+      await chatStore.deleteChatByUuid(+uuid, index).then(() => {
+        dialog.success({
+          title: '成功',
+          content: '删除成功',
+        })
+      }).catch((err) => {
+        dialog.error({
+          title: '错误',
+          content: err.message,
+        })
+      })
     },
   })
 }
@@ -292,8 +320,18 @@ function handleClear() {
     content: t('chat.clearChatConfirm'),
     positiveText: t('common.yes'),
     negativeText: t('common.no'),
-    onPositiveClick: () => {
-      chatStore.clearChatByUuid(+uuid)
+    onPositiveClick: async () => {
+      await chatStore.clearChatByUuid(+uuid).then(() => {
+        dialog.success({
+          title: '成功',
+          content: '清空成功',
+        })
+      }).catch((err) => {
+        dialog.error({
+          title: '错误',
+          content: err.message,
+        })
+      })
     },
   })
 }

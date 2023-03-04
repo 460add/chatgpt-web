@@ -1,16 +1,30 @@
 <script setup lang='ts'>
 import { computed } from 'vue'
-import { NInput, NPopconfirm, NScrollbar } from 'naive-ui'
+import { NInput, NPopconfirm, NScrollbar, useDialog } from 'naive-ui'
 import { SvgIcon } from '@/components/common'
 import { useAppStore, useChatStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
+import { fetchConversationList } from '@/api'
 
 const { isMobile } = useBasicLayout()
 
 const appStore = useAppStore()
 const chatStore = useChatStore()
 
+const dialog = useDialog()
+
 const dataSources = computed(() => chatStore.history)
+
+// 获取会话并刷新state
+fetchConversationList().then((res) => {
+  const state = res.data
+  chatStore.setState(state)
+}).catch((err) => {
+  dialog.error({
+    title: '错误',
+    content: err.message,
+  })
+})
 
 async function handleSelect({ uuid }: Chat.History) {
   if (isActive(uuid))
@@ -22,20 +36,36 @@ async function handleSelect({ uuid }: Chat.History) {
     appStore.setSiderCollapsed(true)
 }
 
-function handleEdit({ uuid }: Chat.History, isEdit: boolean, event?: MouseEvent) {
+function handleEdit(chat: Chat.History, isEdit: boolean, event?: MouseEvent) {
   event?.stopPropagation()
-  chatStore.updateHistory(uuid, { isEdit })
+  chatStore.updateHistory(chat, { isEdit }).catch((err) => {
+    dialog.error({
+      title: '错误',
+      content: err.message,
+    })
+  })
 }
 
 function handleDelete(index: number, event?: MouseEvent | TouchEvent) {
   event?.stopPropagation()
-  chatStore.deleteHistory(index)
+  chatStore.deleteHistory(index).catch((err) => {
+    dialog.error({
+      title: '错误',
+      content: err.message,
+    })
+  })
 }
 
-function handleEnter({ uuid }: Chat.History, isEdit: boolean, event: KeyboardEvent) {
+function handleEnter(chat: Chat.History, isEdit: boolean, event: KeyboardEvent) {
   event?.stopPropagation()
-  if (event.key === 'Enter')
-    chatStore.updateHistory(uuid, { isEdit })
+  if (event.key === 'Enter') {
+    chatStore.updateHistory(chat, { isEdit }).catch((err) => {
+      dialog.error({
+        title: '错误',
+        content: err.message,
+      })
+    })
+  }
 }
 
 function isActive(uuid: number) {
@@ -81,7 +111,7 @@ function isActive(uuid: number) {
                 <button class="p-1">
                   <SvgIcon icon="ri:edit-line" @click="handleEdit(item, true, $event)" />
                 </button>
-                <NPopconfirm placement="bottom" @positive-click="handleDelete(index, $event)">
+                <NPopconfirm placement="bottom" @positive-click="handleDelete(item.uuid, $event)">
                   <template #trigger>
                     <button class="p-1">
                       <SvgIcon icon="ri:delete-bin-line" />

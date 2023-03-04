@@ -6,6 +6,7 @@ import defaultAvatar from '@/assets/avatar.jpg'
 import { isString } from '@/utils/is'
 
 const userStore = useUserStore()
+userStore.freshUserInfo()
 
 const userInfo = computed(() => userStore.userInfo)
 </script>

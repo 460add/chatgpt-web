@@ -1,6 +1,7 @@
 declare namespace Chat {
 
 	interface Chat {
+		id ?: string
 		dateTime: string
 		text: string
 		inversion?: boolean
@@ -23,6 +24,7 @@ declare namespace Chat {
 	}
 
 	interface ConversationRequest {
+		regenerate?: number
 		conversationId?: string
 		parentMessageId?: string
 	}
