@@ -12,6 +12,7 @@ export default defineConfig((env) => {
       },
     },
     plugins: [vue()],
+    base: './',
     server: {
       host: '0.0.0.0',
       port: 1002,
