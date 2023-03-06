@@ -21,6 +21,7 @@ export default {
     deleteMessage: 'Delete Message',
     deleteMessageConfirm: 'Are you sure to delete this message?',
     deleteHistoryConfirm: 'Are you sure to clear this history?',
+    failed: 'If the problem persists, please refresh the page or contact the administrator for support.',
   },
   setting: {
     setting: 'Setting',

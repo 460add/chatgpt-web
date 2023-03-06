@@ -21,6 +21,7 @@ export default {
     deleteMessage: '删除消息',
     deleteMessageConfirm: '是否删除此消息?',
     deleteHistoryConfirm: '确定删除此记录?',
+    failed: '如果问题持续出现，请刷新页面或联系管理员获取支持。',
   },
   setting: {
     setting: '设置',

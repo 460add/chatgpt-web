@@ -28,7 +28,11 @@ export function fetchPayHistoryConfig<T = any>() {
 export function fetchChatAPIProcess<T = any>(
   params: {
     prompt: string
-    options?: { conversationId?: string; parentMessageId?: string }
+    options?: {
+      regenerate?: number
+      conversationId: number
+      parentMessageId: number
+    }
     signal?: GenericAbortSignal
     onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void },
 ) {
@@ -96,7 +100,7 @@ export function fetchDeleteConversation<T = any>(
 export function fetchDeleteMessage<T = any>(
   params: {
     uuid: number
-    message: string
+    message: number
   },
 ) {
   return post<T>({

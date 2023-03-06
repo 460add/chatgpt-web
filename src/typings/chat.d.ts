@@ -1,14 +1,15 @@
 declare namespace Chat {
 
+	// 单条聊天
 	interface Chat {
-		id ?: string
+		id: number
 		dateTime: string
 		text: string
 		inversion?: boolean
 		error?: boolean
 		loading?: boolean
-		conversationOptions?: ConversationRequest | null
 		requestOptions: { prompt: string; options?: ConversationRequest | null }
+		responseOptions: ConversationResponse | null
 	}
 
 	interface History {
@@ -24,24 +25,16 @@ declare namespace Chat {
 	}
 
 	interface ConversationRequest {
-		regenerate?: number
-		conversationId?: string
-		parentMessageId?: string
+		regenerate?: number // 重载？重置消息的id
+		conversationId: number // 会话id
+		parentMessageId: number // 父消息id
 	}
 
 	interface ConversationResponse {
-		conversationId: string
-		detail: {
-			choices: { finish_reason: string; index: number; logprobs: any; text: string }[]
-			created: number
-			id: string
-			model: string
-			object: string
-			usage: { completion_tokens: number; prompt_tokens: number; total_tokens: number }
-		}
-		id: string
-		parentMessageId: string
 		role: string
+		id: number
+		conversationId: number
+		parentMessageId: number
 		text: string
 	}
 }

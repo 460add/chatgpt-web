@@ -11,6 +11,10 @@ export function useChat() {
     chatStore.addChatByUuid(uuid, chat)
   }
 
+  const deleteChat = (uuid: number, index: number) => {
+    chatStore.deleteLocalChatByUuid(uuid, index)
+  }
+
   const updateChat = (uuid: number, index: number, chat: Chat.Chat) => {
     chatStore.updateChatByUuid(uuid, index, chat)
   }
@@ -21,6 +25,7 @@ export function useChat() {
 
   return {
     addChat,
+    deleteChat,
     updateChat,
     updateChatSome,
     getChatByUuidAndIndex,

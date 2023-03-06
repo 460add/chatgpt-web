@@ -1,7 +1,7 @@
 <script setup lang='ts'>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { NButton, NInput, useDialog } from 'naive-ui'
+import { NButton, NInput, useDialog, useMessage } from 'naive-ui'
 import { Message } from './components'
 import { useScroll } from './hooks/useScroll'
 import { useChat } from './hooks/useChat'
@@ -9,20 +9,21 @@ import { useCopyCode } from './hooks/useCopyCode'
 import { HoverButton, SvgIcon } from '@/components/common'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { useChatStore, useUserStore } from '@/store'
-import { fetchChatAPIProcess } from '@/api'
+import { fetchChatAPIProcess, fetchConversationList } from '@/api'
 import { t } from '@/locales'
 
 let controller = new AbortController()
 
 const route = useRoute()
 const dialog = useDialog()
+const message = useMessage()
 
 const chatStore = useChatStore()
 const userStore = useUserStore()
 
 useCopyCode()
 const { isMobile } = useBasicLayout()
-const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
+const { addChat, deleteChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
 const { scrollRef, scrollToBottom } = useScroll()
 
 const { uuid } = route.params as { uuid: string }
@@ -38,7 +39,7 @@ function handleSubmit() {
 }
 
 async function onConversation() {
-  const message = prompt.value
+  const message = prompt.value // 消息
 
   if (loading.value)
     return
@@ -48,43 +49,64 @@ async function onConversation() {
 
   controller = new AbortController()
 
+  // 取上一条ChatGPT回复的消息作为问题的请求参数
+  let questionOptions: Chat.ConversationRequest = {
+    conversationId: 0,
+    parentMessageId: 0,
+  }
+  const questionLastContext = conversationList.value[conversationList.value.length - 1]?.responseOptions
+
+  if (questionLastContext)
+    questionOptions = { ...questionLastContext }
+
+  // 添加问题到本地存储
   addChat(
     +uuid,
     {
+      id: 0,
       dateTime: new Date().toLocaleString(),
       text: message,
       inversion: true,
       error: false,
-      conversationOptions: null,
-      requestOptions: { prompt: message, options: null },
+      requestOptions: { prompt: message, options: { ...questionOptions } },
+      responseOptions: {
+        role: 'user',
+        id: 0,
+        text: message,
+        parentMessageId: questionOptions.parentMessageId,
+        conversationId: questionOptions.conversationId,
+      },
     },
   )
   await scrollToBottom()
 
   loading.value = true
-  prompt.value = ''
+  prompt.value = '' // 清空输入框
 
-  let options: Chat.ConversationRequest = {}
-  const lastContext = conversationList.value[conversationList.value.length - 1]?.conversationOptions
+  let options: Chat.ConversationRequest = {
+    conversationId: +uuid,
+    parentMessageId: 0,
+  }
+  const lastContext = conversationList.value[conversationList.value.length - 1]?.requestOptions.options
 
   if (lastContext)
     options = { ...lastContext }
 
-  // 如果会话ID不存在，就从route中获取
-  options.conversationId = options.conversationId ?? uuid
-
+  // 添加ChatGPT回复的消息到本地存储
   addChat(
     +uuid,
     {
+      id: 0,
       dateTime: new Date().toLocaleString(),
       text: '',
       loading: true,
       inversion: false,
       error: false,
-      conversationOptions: null,
-      requestOptions: { prompt: message, options: { ...options } },
+      requestOptions: { prompt: message, options },
+      responseOptions: null,
     },
   )
+
   await scrollToBottom()
 
   try {
@@ -101,25 +123,31 @@ async function onConversation() {
         if (lastIndex !== -1)
           chunk = responseText.substring(lastIndex)
         try {
-          const data = JSON.parse(chunk)
+          const data = JSON.parse(chunk) as Chat.ConversationResponse
+
+          // 需要将ChatGPT回复的消息中的父消息ID和更新到请求参数中
           options.parentMessageId = data.parentMessageId
+
           updateChat(
             +uuid,
             dataSources.value.length - 1,
             {
-              id: data.id as string,
+              id: data.id,
               dateTime: new Date().toLocaleString(),
               text: data.text ?? '',
               inversion: false,
               error: false,
               loading: false,
-              conversationOptions: { conversationId: data.conversationId, parentMessageId: data.parentMessageId },
               requestOptions: { prompt: message, options: { ...options } },
+              responseOptions: data,
             },
           )
           const questionIndex = dataSources.value.length - 2
           const question = dataSources.value[questionIndex]
-          question.id = data.parentMessageId as string
+          question.id = data.parentMessageId as number
+          if (question.responseOptions)
+            question.responseOptions.id = data.parentMessageId as number
+
           updateChat(
             +uuid,
             questionIndex,
@@ -128,7 +156,15 @@ async function onConversation() {
           scrollToBottom()
         }
         catch (error) {
-          //
+          updateChatSome(
+            +uuid,
+            dataSources.value.length - 1,
+            {
+              text: 'JSON响应错误，请与管理员联系',
+              error: false,
+              loading: false,
+            },
+          )
         }
       },
     })
@@ -137,13 +173,10 @@ async function onConversation() {
     const errorMessage = error?.message ?? t('common.wrong')
 
     if (error.message === 'canceled') {
-      updateChatSome(
-        +uuid,
-        dataSources.value.length - 1,
-        {
-          loading: false,
-        },
-      )
+      // 取消的话，就清除本地存储的消息
+      prompt.value = message
+      deleteChat(+uuid, dataSources.value.length - 1)
+
       await scrollToBottom()
       return
     }
@@ -167,13 +200,14 @@ async function onConversation() {
       +uuid,
       dataSources.value.length - 1,
       {
+        id: 0,
         dateTime: new Date().toLocaleString(),
         text: errorMessage,
         inversion: false,
         error: true,
         loading: false,
-        conversationOptions: null,
         requestOptions: { prompt: message, options: { ...options } },
+        responseOptions: null,
       },
     )
     await scrollToBottom()
@@ -190,18 +224,15 @@ async function onRegenerate(index: number) {
 
   controller = new AbortController()
 
-  const { requestOptions } = dataSources.value[index]
+  const { id, requestOptions, responseOptions } = dataSources.value[index]
 
   const message = requestOptions?.prompt ?? ''
 
-  let options: Chat.ConversationRequest = {}
-
+  // 获取当前消息的id作为regenerate参数
   if (requestOptions.options)
-    options = { ...requestOptions.options }
-
-  // 如果会话ID不存在，就从route中获取
-  options.conversationId = options.conversationId ?? uuid
-  options.regenerate = index
+    requestOptions.options.regenerate = id
+  else
+    throw new Error('会话出现错误，请刷新页面重试。')
 
   loading.value = true
 
@@ -209,20 +240,21 @@ async function onRegenerate(index: number) {
     +uuid,
     index,
     {
+      id,
       dateTime: new Date().toLocaleString(),
       text: '',
       inversion: false,
       error: false,
       loading: true,
-      conversationOptions: null,
-      requestOptions: { prompt: message, ...options },
+      requestOptions,
+      responseOptions,
     },
   )
 
   try {
     await fetchChatAPIProcess<Chat.ConversationResponse>({
       prompt: message,
-      options,
+      options: requestOptions.options,
       signal: controller.signal,
       onDownloadProgress: ({ event }) => {
         const xhr = event.target
@@ -233,19 +265,19 @@ async function onRegenerate(index: number) {
         if (lastIndex !== -1)
           chunk = responseText.substring(lastIndex)
         try {
-          const data = JSON.parse(chunk)
+          const data = JSON.parse(chunk) as Chat.ConversationResponse
           updateChat(
             +uuid,
             index,
             {
-              id: data.id as string,
+              id: data.id,
               dateTime: new Date().toLocaleString(),
               text: data.text ?? '',
               inversion: false,
               error: false,
               loading: false,
-              conversationOptions: { conversationId: data.conversationId, parentMessageId: data.parentMessageId },
-              requestOptions: { prompt: message, ...options },
+              requestOptions: { prompt: message, options: requestOptions.options },
+              responseOptions: data,
             },
           )
         }
@@ -273,13 +305,14 @@ async function onRegenerate(index: number) {
       +uuid,
       index,
       {
+        id: 0,
         dateTime: new Date().toLocaleString(),
-        text: errorMessage,
+        text: `${errorMessage}\n${t('chat.failed')}`,
         inversion: false,
         error: true,
         loading: false,
-        conversationOptions: null,
-        requestOptions: { prompt: message, ...options },
+        requestOptions: { prompt: message, options: requestOptions.options },
+        responseOptions: null,
       },
     )
   }
@@ -350,6 +383,16 @@ function handleEnter(event: KeyboardEvent) {
 function handleStop() {
   if (loading.value) {
     controller.abort()
+    message.loading('会话加载中，请稍后...')
+    fetchConversationList().then((res) => {
+      const state = res.data
+      chatStore.setState(state)
+    }).catch((err) => {
+      dialog.error({
+        title: '错误',
+        content: err.message,
+      })
+    })
     loading.value = false
   }
 }

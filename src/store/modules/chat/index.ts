@@ -1,7 +1,13 @@
 import { defineStore } from 'pinia'
 import { getLocalState, setLocalState } from './helper'
 import { router } from '@/router'
-import { fetchClearConversation, fetchDeleteConversation, fetchDeleteMessage, fetchNewConversation, fetchUpdateConversation } from '@/api'
+import {
+  fetchClearConversation,
+  fetchDeleteConversation,
+  fetchDeleteMessage,
+  fetchNewConversation,
+  fetchUpdateConversation,
+} from '@/api'
 
 export const useChatStore = defineStore('chat-store', {
   state: (): Chat.ChatState => getLocalState(),
@@ -138,6 +144,15 @@ export const useChatStore = defineStore('chat-store', {
       }
     },
 
+    // 由于跟下面异步的 deleteChatByUuid 冲突了，所以改了个名字
+    deleteLocalChatByUuid(uuid: number, index: number) {
+      const chatIndex = this.chat.findIndex(item => item.uuid === uuid)
+      if (chatIndex !== -1) {
+        this.chat[chatIndex].data.splice(index, 1)
+        this.recordState()
+      }
+    },
+
     updateChatByUuid(uuid: number, index: number, chat: Chat.Chat) {
       if (!uuid || uuid === 0) {
         if (this.chat.length) {
@@ -174,8 +189,8 @@ export const useChatStore = defineStore('chat-store', {
       const chatIndex = this.chat.findIndex(item => item.uuid === uuid)
       if (chatIndex !== -1) {
         // 发送删除消息请求
-        const message = this.chat[chatIndex].data[index].id as string
-        const deletePromise = new Promise((resolve, reject) => {
+        const message = this.chat[chatIndex].data[index].id as number
+        return new Promise((resolve, reject) => {
           fetchDeleteMessage({ uuid, message }).then((res) => {
             if (res.status !== 'Success') {
               reject(res)
@@ -189,13 +204,12 @@ export const useChatStore = defineStore('chat-store', {
             reject(err)
           })
         })
-        return deletePromise
       }
     },
 
     async clearChatByUuid(uuid: number) {
       // 发送清空消息请求
-      const clearPromise = new Promise((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         fetchClearConversation({ uuid }).then((res) => {
           if (res.status !== 'Success')
             reject(res)
@@ -217,7 +231,6 @@ export const useChatStore = defineStore('chat-store', {
           reject(err)
         })
       })
-      return clearPromise
     },
 
     // 更新状态
