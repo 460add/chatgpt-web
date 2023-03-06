@@ -37,5 +37,12 @@ export default {
     timeout: '超时',
     socks: 'Socks',
   },
+  buy: {
+    buy: '充值',
+    choose: '选择',
+    choosePlan: '选择套餐',
+    choosePlanDesc: '选择一个套餐，然后点击下面的按钮',
+    history: '充值记录',
+  },
 
 }

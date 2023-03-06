@@ -3,6 +3,7 @@ import { defineAsyncComponent, ref } from 'vue'
 import { HoverButton, SvgIcon, UserAvatar } from '@/components/common'
 
 const Setting = defineAsyncComponent(() => import('@/components/common/Setting/index.vue'))
+const Buy = defineAsyncComponent(() => import('@/components/common/Buy/index.vue'))
 
 const show = ref(false)
 </script>
@@ -11,12 +12,13 @@ const show = ref(false)
   <footer class="flex items-center justify-between min-w-0 p-4 overflow-hidden border-t dark:border-neutral-800">
     <UserAvatar />
 
-    <HoverButton :tooltip="$t('setting.setting')" @click="show = true">
+    <HoverButton :tooltip="$t('buy.buy')" @click="show = true">
       <span class="text-xl text-[#4f555e] dark:text-white">
-        <SvgIcon icon="ri:settings-4-line" />
+        <SvgIcon icon="ri:exchange-cny-fill" />
       </span>
     </HoverButton>
 
-    <Setting v-if="show" v-model:visible="show" />
+    <Buy v-if="show" v-model:visible="show" />
+    <!-- <Setting v-if="show" v-model:visible="show" /> -->
   </footer>
 </template>

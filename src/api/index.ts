@@ -19,6 +19,12 @@ export function fetchChatConfig<T = any>() {
   })
 }
 
+export function fetchPayHistoryConfig<T = any>() {
+  return get<T>({
+    url: '/pay-history',
+  })
+}
+
 export function fetchChatAPIProcess<T = any>(
   params: {
     prompt: string

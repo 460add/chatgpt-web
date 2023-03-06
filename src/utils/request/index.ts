@@ -33,6 +33,15 @@ function http<T = any>(
     throw new Error(error?.message || 'Error')
   }
 
+  // 取得 nonce
+  // const nonce = location.href.split('?')[1].split('=')[1].split('#')[0]
+  const nonce = ''
+
+  headers = {
+    'X-WP-Nonce': nonce,
+    ...headers,
+  }
+
   beforeRequest?.()
 
   method = method || 'GET'
@@ -40,7 +49,7 @@ function http<T = any>(
   const params = Object.assign(typeof data === 'function' ? data() : data ?? {}, {})
 
   return method === 'GET'
-    ? request.get(url, { params, signal, onDownloadProgress }).then(successHandler, failHandler)
+    ? request.get(url, { params, headers, signal, onDownloadProgress }).then(successHandler, failHandler)
     : request.post(url, params, { headers, signal, onDownloadProgress }).then(successHandler, failHandler)
 }
 

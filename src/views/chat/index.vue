@@ -8,7 +8,7 @@ import { useChat } from './hooks/useChat'
 import { useCopyCode } from './hooks/useCopyCode'
 import { HoverButton, SvgIcon } from '@/components/common'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { useChatStore } from '@/store'
+import { useChatStore, useUserStore } from '@/store'
 import { fetchChatAPIProcess } from '@/api'
 import { t } from '@/locales'
 
@@ -18,6 +18,7 @@ const route = useRoute()
 const dialog = useDialog()
 
 const chatStore = useChatStore()
+const userStore = useUserStore()
 
 useCopyCode()
 const { isMobile } = useBasicLayout()
@@ -58,7 +59,7 @@ async function onConversation() {
       requestOptions: { prompt: message, options: null },
     },
   )
-  scrollToBottom()
+  await scrollToBottom()
 
   loading.value = true
   prompt.value = ''
@@ -84,7 +85,7 @@ async function onConversation() {
       requestOptions: { prompt: message, options: { ...options } },
     },
   )
-  scrollToBottom()
+  await scrollToBottom()
 
   try {
     await fetchChatAPIProcess<Chat.ConversationResponse>({
@@ -143,7 +144,7 @@ async function onConversation() {
           loading: false,
         },
       )
-      scrollToBottom()
+      await scrollToBottom()
       return
     }
 
@@ -175,9 +176,10 @@ async function onConversation() {
         requestOptions: { prompt: message, options: { ...options } },
       },
     )
-    scrollToBottom()
+    await scrollToBottom()
   }
   finally {
+    userStore.freshUserInfo()
     loading.value = false
   }
 }

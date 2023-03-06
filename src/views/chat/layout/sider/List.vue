@@ -1,6 +1,6 @@
 <script setup lang='ts'>
 import { computed } from 'vue'
-import { NInput, NPopconfirm, NScrollbar, useDialog } from 'naive-ui'
+import { NInput, NPopconfirm, NScrollbar, useDialog, useLoadingBar, useMessage } from 'naive-ui'
 import { SvgIcon } from '@/components/common'
 import { useAppStore, useChatStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
@@ -12,27 +12,34 @@ const appStore = useAppStore()
 const chatStore = useChatStore()
 
 const dialog = useDialog()
+const loadingBar = useLoadingBar()
+const message = useMessage()
 
 const dataSources = computed(() => chatStore.history)
 
 // 获取会话并刷新state
+loadingBar.start()
+message.loading('会话加载中，请稍后...')
 fetchConversationList().then((res) => {
+  message.success('会话加载成功')
+  loadingBar.finish()
   const state = res.data
   chatStore.setState(state)
 }).catch((err) => {
+  loadingBar.finish()
   dialog.error({
     title: '错误',
     content: err.message,
   })
 })
 
-async function handleSelect({ uuid }: Chat.History) {
-  if (isActive(uuid))
+async function handleSelect(chat: Chat.History) {
+  if (isActive(chat.uuid))
     return
 
   if (chatStore.active)
-    chatStore.updateHistory(chatStore.active, { isEdit: false })
-  await chatStore.setActive(uuid)
+    await chatStore.updateHistory(chat, { isEdit: false })
+  await chatStore.setActive(chat.uuid)
 
   if (isMobile.value)
     appStore.setSiderCollapsed(true)
@@ -40,7 +47,11 @@ async function handleSelect({ uuid }: Chat.History) {
 
 function handleEdit(chat: Chat.History, isEdit: boolean, event?: MouseEvent) {
   event?.stopPropagation()
-  chatStore.updateHistory(chat, { isEdit }).catch((err) => {
+  loadingBar.start()
+  chatStore.updateHistory(chat, { isEdit }).then((res) => {
+    loadingBar.finish()
+  }).catch((err) => {
+    loadingBar.finish()
     dialog.error({
       title: '错误',
       content: err.message,
@@ -50,7 +61,11 @@ function handleEdit(chat: Chat.History, isEdit: boolean, event?: MouseEvent) {
 
 function handleDelete(index: number, event?: MouseEvent | TouchEvent) {
   event?.stopPropagation()
-  chatStore.deleteHistory(index).catch((err) => {
+  loadingBar.start()
+  chatStore.deleteHistory(index).then(() => {
+    loadingBar.finish()
+  }).catch((err) => {
+    loadingBar.finish()
     dialog.error({
       title: '错误',
       content: err.message,
@@ -61,7 +76,10 @@ function handleDelete(index: number, event?: MouseEvent | TouchEvent) {
 function handleEnter(chat: Chat.History, isEdit: boolean, event: KeyboardEvent) {
   event?.stopPropagation()
   if (event.key === 'Enter') {
-    chatStore.updateHistory(chat, { isEdit }).catch((err) => {
+    chatStore.updateHistory(chat, { isEdit }).then(() => {
+      loadingBar.finish()
+    }).catch((err) => {
+      loadingBar.finish()
       dialog.error({
         title: '错误',
         content: err.message,
