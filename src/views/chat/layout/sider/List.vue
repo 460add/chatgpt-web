@@ -1,10 +1,9 @@
 <script setup lang='ts'>
 import { computed } from 'vue'
-import { NInput, NPopconfirm, NScrollbar, useDialog, useLoadingBar, useMessage } from 'naive-ui'
+import { NInput, NPopconfirm, NScrollbar, useDialog, useLoadingBar } from 'naive-ui'
 import { SvgIcon } from '@/components/common'
 import { useAppStore, useChatStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { fetchConversationList } from '@/api'
 
 const { isMobile } = useBasicLayout()
 
@@ -13,25 +12,8 @@ const chatStore = useChatStore()
 
 const dialog = useDialog()
 const loadingBar = useLoadingBar()
-const message = useMessage()
 
 const dataSources = computed(() => chatStore.history)
-
-// 获取会话并刷新state
-loadingBar.start()
-message.loading('会话加载中，请稍后...')
-fetchConversationList().then((res) => {
-  message.success('会话加载成功')
-  loadingBar.finish()
-  const state = res.data
-  chatStore.setState(state)
-}).catch((err) => {
-  loadingBar.finish()
-  dialog.error({
-    title: '错误',
-    content: err.message,
-  })
-})
 
 async function handleSelect(chat: Chat.History) {
   if (isActive(chat.uuid))
@@ -48,7 +30,7 @@ async function handleSelect(chat: Chat.History) {
 function handleEdit(chat: Chat.History, isEdit: boolean, event?: MouseEvent) {
   event?.stopPropagation()
   loadingBar.start()
-  chatStore.updateHistory(chat, { isEdit }).then((res) => {
+  chatStore.updateHistory(chat, { isEdit }).then(() => {
     loadingBar.finish()
   }).catch((err) => {
     loadingBar.finish()

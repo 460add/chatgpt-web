@@ -19,9 +19,9 @@ export function fetchChatConfig<T = any>() {
   })
 }
 
-export function fetchPayHistoryConfig<T = any>() {
+export function fetchPayHistory<T = any>() {
   return get<T>({
-    url: '/pay-history',
+    url: '/order-history',
   })
 }
 
@@ -128,5 +128,44 @@ export function fetchClearConversation<T = any>(
 export function fetchUserInfo<T = any>() {
   return get<T>({
     url: '/user-info',
+  })
+}
+
+// 获取套餐列表
+export function fetchPackage<T = any>() {
+  return get<T>({
+    url: '/package',
+  })
+}
+
+// 提交订单
+export function fetchOrder<T = any>(
+  params: {
+    package: number
+    pay_type: string
+  },
+) {
+  return post<T>({
+    url: '/create-order',
+    data: params,
+  })
+}
+
+// 检查订单状态
+export function fetchOrderStatus<T = any>(
+  params: {
+    id: string
+  },
+) {
+  return post<T>({
+    url: '/check-order',
+    data: params,
+  })
+}
+
+// 获取订单历史
+export function fetchOrderHistory<T = any>() {
+  return get<T>({
+    url: '/order-history',
   })
 }

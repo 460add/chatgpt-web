@@ -47,6 +47,14 @@ export const useChatStore = defineStore('chat-store', {
     },
 
     async updateHistory(chat: Chat.History, edit: Partial<Chat.History>) {
+      if (!chat.isEdit && !edit.isEdit) {
+        const index = this.history.findIndex(item => item.uuid === chat.uuid)
+        if (index !== -1) {
+          this.history[index] = { ...this.history[index], ...edit }
+          this.recordState()
+        }
+        return
+      }
       // 发送更新会话请求
       await fetchUpdateConversation(chat).then((res) => {
         if (res.status !== 'Success')

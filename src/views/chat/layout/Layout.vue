@@ -1,11 +1,12 @@
 <script setup lang='ts'>
 import { computed } from 'vue'
-import { NLayout, NLayoutContent } from 'naive-ui'
+import { NLayout, NLayoutContent, useDialog, useMessage } from 'naive-ui'
 import { useRouter } from 'vue-router'
 import Sider from './sider/index.vue'
 import Header from './header/index.vue'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { useAppStore, useChatStore } from '@/store'
+import { fetchConversationList } from '@/api'
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -14,6 +15,9 @@ const chatStore = useChatStore()
 router.replace({ name: 'Chat', params: { uuid: chatStore.active } })
 
 const { isMobile } = useBasicLayout()
+
+const message = useMessage()
+const dialog = useDialog()
 
 const collapsed = computed(() => appStore.siderCollapsed)
 
@@ -28,6 +32,19 @@ const getContainerClass = computed(() => {
     'h-full',
     { 'pl-[260px]': !isMobile.value && !collapsed.value },
   ]
+})
+
+// 获取会话并刷新state
+message.loading('会话加载中，请稍后...')
+fetchConversationList().then((res) => {
+  message.success('会话加载成功')
+  const state = res.data
+  chatStore.setState(state)
+}).catch((err) => {
+  dialog.error({
+    title: '错误',
+    content: err.message,
+  })
 })
 </script>
 
