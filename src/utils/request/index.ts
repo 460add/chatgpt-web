@@ -34,8 +34,8 @@ function http<T = any>(
   }
 
   // 取得 nonce
-  // const nonce = location.href.split('?')[1].split('=')[1].split('#')[0]
-  const nonce = ''
+  const nonce = location.href.split('?')[1].split('=')[1].split('#')[0]
+  // const nonce = ''
 
   headers = {
     'X-WP-Nonce': nonce,
