@@ -222,7 +222,7 @@ async function onConversation() {
         responseOptions: null,
       },
     )
-    scrollToBottom()
+    await scrollToBottom()
   }
   finally {
     userStore.freshUserInfo()
@@ -363,7 +363,7 @@ function handleExport() {
         window.URL.revokeObjectURL(imgUrl)
         d.loading = false
         message.success(t('chat.exportSuccess'))
-        Promise.resolve()
+        await Promise.resolve()
       }
       catch (error: any) {
         message.error(t('chat.exportFailed'))
@@ -460,9 +460,9 @@ function handleStop() {
 function toggleUsingContext() {
   usingContext.value = !usingContext.value
   if (usingContext.value)
-    ms.success(t('chat.turnOnContext'))
+    message.success(t('chat.turnOnContext'))
   else
-    ms.warning(t('chat.turnOffContext'))
+    message.warning(t('chat.turnOffContext'))
 }
 
 function onInputFocus() {
