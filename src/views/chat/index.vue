@@ -457,14 +457,6 @@ function handleStop() {
   }
 }
 
-function toggleUsingContext() {
-  usingContext.value = !usingContext.value
-  if (usingContext.value)
-    message.success(t('chat.turnOnContext'))
-  else
-    message.warning(t('chat.turnOffContext'))
-}
-
 function onInputFocus() {
   if (isMobile.value)
     actionVisible.value = false
@@ -565,11 +557,6 @@ onUnmounted(() => {
             <HoverButton @click="handleExport">
               <span class="text-xl text-[#4f555e] dark:text-white">
                 <SvgIcon icon="ri:download-2-line" />
-              </span>
-            </HoverButton>
-            <HoverButton @click="toggleUsingContext">
-              <span class="text-xl" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }">
-                <SvgIcon icon="ri:chat-history-line" />
               </span>
             </HoverButton>
           </div>
