@@ -2,7 +2,6 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { NButton, NInput, useDialog, useMessage } from 'naive-ui'
-import { NButton, NInput, useDialog, useMessage } from 'naive-ui'
 import html2canvas from 'html2canvas'
 import { Message } from './components'
 import { useScroll } from './hooks/useScroll'
@@ -170,7 +169,7 @@ async function onConversation() {
         }
       },
     })
-		scrollToBottom()
+    scrollToBottom()
   }
   catch (error: any) {
     const errorMessage = error?.message ?? t('common.wrong')
@@ -213,7 +212,7 @@ async function onConversation() {
         responseOptions: null,
       },
     )
-		scrollToBottom()
+    scrollToBottom()
   }
   finally {
     userStore.freshUserInfo()
@@ -351,11 +350,11 @@ function handleExport() {
         document.body.removeChild(tempLink)
         window.URL.revokeObjectURL(imgUrl)
         d.loading = false
-				message.success(t('chat.exportSuccess'))
+        message.success(t('chat.exportSuccess'))
         Promise.resolve()
       }
       catch (error: any) {
-				message.error(t('chat.exportFailed'))
+        message.error(t('chat.exportFailed'))
       }
       finally {
         d.loading = false
