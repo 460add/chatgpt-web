@@ -5,12 +5,15 @@ import { useRouter } from 'vue-router'
 import Sider from './sider/index.vue'
 import Header from './header/index.vue'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { useAppStore, useChatStore } from '@/store'
+import { useAppStore, useChatStore, useUserStore } from '@/store'
 import { fetchConversationList } from '@/api'
+import { defaultState } from '@/store/modules/chat/helper'
+import { defaultSetting } from '@/store/modules/user/helper'
 
 const router = useRouter()
 const appStore = useAppStore()
 const chatStore = useChatStore()
+const userStore = useUserStore()
 
 router.replace({ name: 'Chat', params: { uuid: chatStore.active } })
 
@@ -41,6 +44,8 @@ fetchConversationList().then((res) => {
   const state = res.data
   chatStore.setState(state)
 }).catch((err) => {
+  chatStore.setState(defaultState())
+  userStore.updateUserInfo(defaultSetting().userInfo)
   dialog.error({
     title: '错误',
     content: err.message,

@@ -48,6 +48,15 @@ async function onConversation() {
   if (!message || message.trim() === '')
     return
 
+  // 判断会话ID是否为空
+  if (!uuid || uuid === '' || uuid === '0') {
+    dialog.info({
+      title: '提示',
+      content: '请先创建会话',
+    })
+    return
+  }
+
   controller = new AbortController()
 
   // 取上一条ChatGPT回复的消息作为问题的请求参数
