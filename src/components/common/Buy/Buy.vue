@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
-import { NButton, NRadioButton, NRadioGroup, NSpace, NSpin, useMessage } from 'naive-ui'
+import { NButton, NPopconfirm, NRadioButton, NRadioGroup, NSpace, NSpin, useMessage } from 'naive-ui'
 import { useUserStore } from '@/store'
 import { fetchOrder, fetchOrderStatus, fetchPackage } from '@/api'
 
@@ -17,6 +17,7 @@ const ms = useMessage()
 
 const loading = ref(true)
 
+const payUrl = ref('')
 const packages = ref([] as Package[])
 const packageValue = ref(0)
 const packetPrice = ref(0)
@@ -64,6 +65,7 @@ const handlePay = () => {
       pay_type: payTypeValue.value,
     }
     fetchOrder(params).then((res) => {
+      payUrl.value = res.data.pay_url
       window.open(res.data.pay_url, '_blank')
       const params = {
         id: res.data.id,
@@ -78,11 +80,16 @@ const handlePay = () => {
           }
         })
       }, 3000)
-    }).catch(() => {
-      ms.error('获取支付信息失败')
+    }).catch((res) => {
+      ms.error(`获取支付信息失败：${res.message}`)
       loading.value = false
     })
   }
+}
+
+const handleOpenPayUrlClick = () => {
+  window.open(payUrl.value, '_blank')
+  ms.info('已尝试您打开支付页面，若仍未成功，请检查浏览器权限设置')
 }
 </script>
 
@@ -133,9 +140,14 @@ const handlePay = () => {
             </NRadioGroup>
           </div>
         </div>
-        <NButton size="large" type="primary" @click="handlePay()">
-          去支付
-        </NButton>
+        <NPopconfirm :negative-text="null" @positive-click="handleOpenPayUrlClick">
+          <template #trigger>
+            <NButton size="large" type="primary" @click="handlePay()">
+              去支付
+            </NButton>
+          </template>
+          若无法自动跳转支付页面，请点击下方按钮
+        </NPopconfirm>
       </div>
     </div>
   </NSpin>
