@@ -65,8 +65,8 @@ const data = ref([] as PayHistory[])
 fetchPayHistory().then((res) => {
   data.value = res.data as PayHistory[]
   loading.value = false
-}).catch(() => {
-  ms.error('获取支付记录失败')
+}).catch((res) => {
+  ms.error(`错误：${res.message}`)
   loading.value = false
 })
 </script>

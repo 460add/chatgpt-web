@@ -51,8 +51,8 @@ fetchPackage().then((res) => {
   packetPrice.value = packages.value[0].price
   packetQuota.value = packages.value[0].quota
   loading.value = false
-}).catch(() => {
-  ms.error('获取套餐信息失败')
+}).catch((res) => {
+  ms.error(`错误：${res.message}`)
   loading.value = false
 })
 
@@ -81,15 +81,20 @@ const handlePay = () => {
         })
       }, 3000)
     }).catch((res) => {
-      ms.error(`获取支付信息失败：${res.message}`)
+      ms.error(`错误：${res.message}`)
       loading.value = false
     })
   }
 }
 
 const handleOpenPayUrlClick = () => {
-  window.open(payUrl.value, '_blank')
-  ms.info('已尝试您打开支付页面，若仍未成功，请检查浏览器权限设置')
+  if (payUrl.value !== '') {
+    window.open(payUrl.value, '_blank')
+    ms.info('已尝试您打开支付页面，若仍未成功，请检查浏览器权限设置')
+  }
+  else {
+    ms.error('未获取到支付链接，请稍后再试')
+  }
 }
 </script>
 
