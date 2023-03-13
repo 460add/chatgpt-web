@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
-import { NButton, NPopconfirm, NRadioButton, NRadioGroup, NSpace, NSpin, useMessage } from 'naive-ui'
+import { NButton, NPopconfirm, NRadioButton, NRadioGroup, NSpace, NSpin, useDialog, useMessage } from 'naive-ui'
 import { useUserStore } from '@/store'
 import { fetchOrder, fetchOrderStatus, fetchPackage } from '@/api'
 
@@ -14,6 +14,7 @@ interface Package {
 const userStore = useUserStore()
 
 const ms = useMessage()
+const dialog = useDialog()
 
 const loading = ref(true)
 
@@ -74,6 +75,10 @@ const handlePay = () => {
         fetchOrderStatus(params).then((res) => {
           if (res.status === 'Success') {
             ms.success('充值成功')
+            dialog.success({
+              title: '充值成功',
+              content: '您的充值已成功，请不要重复支付哦！',
+            })
             userStore.freshUserInfo()
             clearInterval(timer)
             loading.value = false
@@ -104,7 +109,7 @@ const handleOpenPayUrlClick = () => {
       <div class="space-y-6">
         <h2 class="text-xl font-bold">
           <span>选择套餐</span>
-          <span style="float: right">{{ userStore.userInfo.description }}</span>
+          <span style="float: right; color: red;"><b>{{ userStore.userInfo.description }}</b></span>
         </h2>
         <div class="flex items-center space-x-4">
           <NRadioGroup v-model:value="packageValue" name="packages" size="large">
