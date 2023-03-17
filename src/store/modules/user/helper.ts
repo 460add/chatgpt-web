@@ -21,7 +21,7 @@ export function defaultSetting(): UserState {
       name: 'Loading',
       description: 'Star on <a href="https://github.com/HaoZi-Team/chatgpt-web" class="text-blue-500" target="_blank" >Github</a>',
       gptAvatar: '',
-      pay: true,
+      pay: false,
     },
   }
 }
