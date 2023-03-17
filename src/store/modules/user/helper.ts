@@ -6,6 +6,8 @@ export interface UserInfo {
   avatar: string
   name: string
   description: string
+  gptAvatar?: string
+  pay?: boolean
 }
 
 export interface UserState {
@@ -18,6 +20,8 @@ export function defaultSetting(): UserState {
       avatar: 'https://weavatar.com/avatar/',
       name: 'Loading',
       description: 'Star on <a href="https://github.com/HaoZi-Team/chatgpt-web" class="text-blue-500" target="_blank" >Github</a>',
+      gptAvatar: '',
+      pay: true,
     },
   }
 }

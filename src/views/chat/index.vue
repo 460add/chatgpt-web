@@ -208,7 +208,7 @@ async function onConversation() {
       return
     }
 
-    updateChat(
+    updateChatSome(
       +uuid,
       dataSources.value.length - 1,
       {
@@ -218,8 +218,6 @@ async function onConversation() {
         inversion: false,
         error: true,
         loading: false,
-        requestOptions: { prompt: message, options: { ...options } },
-        responseOptions: null,
       },
     )
     await scrollToBottom()
@@ -313,7 +311,7 @@ async function onRegenerate(index: number) {
 
     const errorMessage = error?.message ?? t('common.wrong')
 
-    updateChat(
+    updateChatSome(
       +uuid,
       index,
       {
@@ -323,8 +321,6 @@ async function onRegenerate(index: number) {
         inversion: false,
         error: true,
         loading: false,
-        requestOptions: { prompt: message, options: requestOptions.options },
-        responseOptions: null,
       },
     )
   }

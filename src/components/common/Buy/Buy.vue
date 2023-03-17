@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 import { NButton, NPopconfirm, NRadioButton, NRadioGroup, NSpace, NSpin, useDialog, useMessage } from 'naive-ui'
 import { useUserStore } from '@/store'
-import { fetchOrder, fetchOrderStatus, fetchPackage } from '@/api'
+import { fetchOrder, fetchOrderStatus, fetchPackage, fetchPayType } from '@/api'
 
 interface Package {
   package: number
@@ -28,10 +28,12 @@ const payTypes = ref([
   {
     label: '支付宝',
     value: 'alipay',
+    show: false,
   },
   {
     label: '微信',
     value: 'wxpay',
+    show: false,
   },
 ])
 
@@ -55,6 +57,16 @@ fetchPackage().then((res) => {
 }).catch((res) => {
   ms.error(`错误：${res.message}`)
   loading.value = false
+})
+
+fetchPayType().then((res) => {
+  if (Number(res.data.wxpay) === 1)
+    payTypes.value[1].show = true
+
+  if (Number(res.data.alipay) === 1)
+    payTypes.value[0].show = true
+}).catch((res) => {
+  ms.error(`错误：${res.message}`)
 })
 
 const handlePay = () => {
@@ -142,6 +154,7 @@ const handleOpenPayUrlClick = () => {
               <NSpace>
                 <NRadioButton
                   v-for="item in payTypes"
+                  v-show="item.show"
                   :key="item.value"
                   :value="item.value"
                   :label="item.label"

@@ -138,6 +138,13 @@ export function fetchPackage<T = any>() {
   })
 }
 
+// 获取支付方式
+export function fetchPayType<T = any>() {
+  return get<T>({
+    url: '/pay-type',
+  })
+}
+
 // 提交订单
 export function fetchOrder<T = any>(
   params: {
