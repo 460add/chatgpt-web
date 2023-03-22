@@ -60,11 +60,15 @@ fetchPackage().then((res) => {
 })
 
 fetchPayType().then((res) => {
-  if (Number(res.data.wxpay) === 1)
+  if (Number(res.data.wxpay) === 1) {
     payTypes.value[1].show = true
+    payTypeValue.value = 'wxpay'
+  }
 
-  if (Number(res.data.alipay) === 1)
+  if (Number(res.data.alipay) === 1) {
     payTypes.value[0].show = true
+    payTypeValue.value = 'alipay'
+  }
 }).catch((res) => {
   ms.error(`错误：${res.message}`)
 })
