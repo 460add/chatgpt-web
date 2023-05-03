@@ -13,7 +13,9 @@ const userInfo = computed(() => userStore.userInfo)
 
 <template>
   <footer class="flex items-center justify-between min-w-0 p-4 overflow-hidden border-t dark:border-neutral-800">
-    <UserAvatar />
+    <div class="flex-1 flex-shrink-0 overflow-hidden">
+      <UserAvatar />
+    </div>
 
     <template v-if="userInfo.pay">
       <HoverButton :tooltip="$t('buy.buy')" @click="show = true">

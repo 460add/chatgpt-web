@@ -22,6 +22,10 @@ function http<T = any>(
   { url, data, method, headers, onDownloadProgress, signal, beforeRequest, afterRequest }: HttpOption,
 ) {
   const successHandler = (res: AxiosResponse<Response<T>>) => {
+    // 如果存在 X-WP-Nonce，将其保存到 localStorage
+    if (res.headers['x-wp-nonce'])
+      localStorage.setItem('X-WP-Nonce', res.headers['x-wp-nonce'])
+
     if (res.data.status === 'Success' || typeof res.data === 'string')
       return res.data
 
@@ -34,8 +38,7 @@ function http<T = any>(
   }
 
   // 取得 nonce
-  const nonce = location.href.split('?')[1].split('=')[1].split('#')[0]
-  // const nonce = ''
+  const nonce = localStorage.getItem('X-WP-Nonce') || location.href.split('?')[1].split('=')[1].split('#')[0]
 
   headers = {
     'X-WP-Nonce': nonce,

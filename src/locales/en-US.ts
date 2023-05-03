@@ -35,6 +35,8 @@ export default {
     deleteHistoryConfirm: 'Are you sure to clear this history?',
     failed: 'If the problem persists, please refresh the page or contact the administrator for support.',
     clearHistoryConfirm: 'Are you sure to clear chat history?',
+    preview: 'Preview',
+    showRawText: 'Show as raw text',
   },
   setting: {
     setting: 'Setting',

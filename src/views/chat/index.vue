@@ -1,4 +1,5 @@
 <script setup lang='ts'>
+import type { Ref } from 'vue'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { NButton, NInput, useDialog, useMessage } from 'naive-ui'
@@ -34,6 +35,7 @@ const conversationList = computed(() => dataSources.value.filter(item => (!item.
 
 const prompt = ref<string>('')
 const loading = ref<boolean>(false)
+const inputRef = ref<Ref | null>(null)
 const usingContext = ref<boolean>(true)
 const actionVisible = ref<boolean>(true)
 
@@ -488,6 +490,8 @@ const footerClass = computed(() => {
 
 onMounted(() => {
   scrollToBottom()
+  if (inputRef.value && !isMobile.value)
+    inputRef.value?.focus()
 })
 
 onUnmounted(() => {
@@ -557,9 +561,10 @@ onUnmounted(() => {
             </HoverButton>
           </div>
           <NInput
+            ref="inputRef"
             v-model:value="prompt"
             type="textarea"
-            :autosize="{ minRows: 1, maxRows: 2 }"
+            :autosize="{ minRows: 1, maxRows: 4 }"
             :placeholder="placeholder"
             @focus="onInputFocus"
             @blur="onInputBlur"

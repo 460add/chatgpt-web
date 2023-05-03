@@ -22,6 +22,8 @@ function handleAdd() {
       content: err.message,
     })
   })
+  if (isMobile.value)
+    appStore.setSiderCollapsed(true)
 }
 
 function handleUpdateCollapsed() {

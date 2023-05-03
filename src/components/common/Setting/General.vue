@@ -13,8 +13,6 @@ const userStore = useUserStore()
 
 const ms = useMessage()
 
-const theme = computed(() => appStore.theme)
-
 const userInfo = computed(() => userStore.userInfo)
 
 const avatar = ref(userInfo.value.avatar ?? '')
@@ -23,30 +21,11 @@ const name = ref(userInfo.value.name ?? '')
 
 const description = ref(userInfo.value.description ?? '')
 
-const language = computed({
-  get() {
-    return appStore.language
-  },
-  set(value: Language) {
-    appStore.setLanguage(value)
-  },
-})
-
 const themeOptions: { label: string; key: Theme; icon: string }[] = [
   {
     label: 'Auto',
     key: 'auto',
     icon: 'ri:contrast-line',
-  },
-  {
-    label: 'Light',
-    key: 'light',
-    icon: 'ri:sun-foggy-line',
-  },
-  {
-    label: 'Dark',
-    key: 'dark',
-    icon: 'ri:moon-foggy-line',
   },
 ]
 
@@ -186,7 +165,6 @@ function handleImportButtonClick(): void {
           <template v-for="item of themeOptions" :key="item.key">
             <NButton
               size="small"
-              :type="item.key === theme ? 'primary' : undefined"
               @click="appStore.setTheme(item.key)"
             >
               <template #icon>
@@ -202,7 +180,6 @@ function handleImportButtonClick(): void {
           <template v-for="item of languageOptions" :key="item.key">
             <NButton
               size="small"
-              :type="item.key === language ? 'primary' : undefined"
               @click="appStore.setLanguage(item.key)"
             >
               {{ item.label }}

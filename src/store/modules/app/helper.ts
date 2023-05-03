@@ -2,7 +2,7 @@ import { ss } from '@/utils/storage'
 
 const LOCAL_NAME = 'appSetting'
 
-export type Theme = 'light' | 'dark' | 'auto'
+export type Theme = 'auto'
 
 export type Language = 'zh-CN' | 'zh-TW' | 'en-US'
 
